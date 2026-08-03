@@ -66,8 +66,12 @@ export const AwardPotModal: React.FC<AwardPotModalProps> = ({
 
   let allInWinnings = 0;
   let allInRefund = 0;
+  let contributingPlayerCount = 0;
 
   if (singleWinner && singleWinner.isAllIn) {
+    const contributors = players.filter((p) => p.currentBet > 0);
+    contributingPlayerCount = contributors.length > 0 ? contributors.length : players.length;
+
     players.forEach((p) => {
       const winFromP = Math.min(p.currentBet, singleWinner.currentBet);
       allInWinnings += winFromP;
@@ -104,9 +108,9 @@ export const AwardPotModal: React.FC<AwardPotModalProps> = ({
 
           {singleWinner && singleWinner.isAllIn && allInRefund > 0 && (
             <div className="mt-2 text-xs text-amber-300 font-medium bg-amber-950/80 px-2.5 py-1.5 rounded-xl border border-amber-700/60 inline-block leading-tight text-left">
-              ⚡ <strong>All-In Capped:</strong> {singleWinner.name} ชนะได้สูงสุด <strong>+{allInWinnings.toLocaleString()}</strong> (2 เท่าของ All-In)
+              ⚡ <strong>All-In Capped:</strong> {singleWinner.name} ชนะได้สูงสุด <strong>{contributingPlayerCount} เท่าของยอด All-In</strong> (+{allInWinnings.toLocaleString()} Chips)
               <br />
-              <span className="text-[10px] text-amber-200/90">↩ คืนชิปส่วนเกินให้คู่แข่ง +{allInRefund.toLocaleString()}</span>
+              <span className="text-[10px] text-amber-200/90">↩ คืนชิปส่วนเกินให้ผู้เล่นอื่น +{allInRefund.toLocaleString()} Chips</span>
             </div>
           )}
 
