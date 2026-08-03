@@ -13,6 +13,7 @@ interface ActionControlsProps {
   onCheck: () => void;
   onCall: () => void;
   onRaise: (amount: number) => void;
+  onAddBet?: (amount: number) => void;
   onFold: () => void;
   onAllIn: () => void;
   onNextTurn: () => void;
@@ -29,6 +30,7 @@ export const ActionControls: React.FC<ActionControlsProps> = ({
   onCheck,
   onCall,
   onRaise,
+  onAddBet,
   onFold,
   onAllIn,
   onNextTurn,
@@ -52,7 +54,11 @@ export const ActionControls: React.FC<ActionControlsProps> = ({
 
   const addQuickAmount = (addVal: number) => {
     sound.playChip();
-    setRaiseAmount((prev) => Math.min(activePlayer.chips, prev + addVal));
+    if (onAddBet) {
+      onAddBet(addVal);
+    } else {
+      setRaiseAmount((prev) => Math.min(activePlayer.chips, prev + addVal));
+    }
   };
 
   const handleRaiseSubmit = () => {
@@ -163,11 +169,12 @@ export const ActionControls: React.FC<ActionControlsProps> = ({
               disabled={activePlayer.chips < effectiveSB}
               onClick={() => {
                 sound.playChip();
-                onRaise(activePlayer.currentBet + effectiveSB);
+                if (onAddBet) onAddBet(effectiveSB);
+                else onRaise(activePlayer.currentBet + effectiveSB);
               }}
               className="bg-amber-950/60 hover:bg-amber-900/80 text-amber-300 disabled:opacity-30 font-extrabold text-xs px-2.5 py-1.5 rounded-xl border border-amber-700/50 shrink-0 cursor-pointer active:scale-95 transition-all"
             >
-              ลง SB ({effectiveSB})
+              ลง SB (+{effectiveSB})
             </button>
 
             {/* Post BB */}
@@ -175,42 +182,46 @@ export const ActionControls: React.FC<ActionControlsProps> = ({
               disabled={activePlayer.chips < effectiveBB}
               onClick={() => {
                 sound.playChip();
-                onRaise(activePlayer.currentBet + effectiveBB);
+                if (onAddBet) onAddBet(effectiveBB);
+                else onRaise(activePlayer.currentBet + effectiveBB);
               }}
               className="bg-cyan-950/60 hover:bg-cyan-900/80 text-cyan-300 disabled:opacity-30 font-extrabold text-xs px-2.5 py-1.5 rounded-xl border border-cyan-700/50 shrink-0 cursor-pointer active:scale-95 transition-all"
             >
-              ลง BB ({effectiveBB})
+              ลง BB (+{effectiveBB})
             </button>
 
             {/* Raise 2x BB */}
             <button
-              disabled={activePlayer.chips < effectiveBB * 2 - activePlayer.currentBet}
+              disabled={activePlayer.chips < effectiveBB * 2}
               onClick={() => {
                 sound.playChip();
-                onRaise(effectiveBB * 2);
+                if (onAddBet) onAddBet(effectiveBB * 2);
+                else onRaise(effectiveBB * 2);
               }}
               className="bg-zinc-800 hover:bg-zinc-700 text-emerald-400 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-zinc-700 shrink-0 cursor-pointer active:scale-95 transition-all"
             >
-              Raise 2x ({effectiveBB * 2})
+              Raise +2x ({effectiveBB * 2})
             </button>
 
             {/* Raise 3x BB */}
             <button
-              disabled={activePlayer.chips < effectiveBB * 3 - activePlayer.currentBet}
+              disabled={activePlayer.chips < effectiveBB * 3}
               onClick={() => {
                 sound.playChip();
-                onRaise(effectiveBB * 3);
+                if (onAddBet) onAddBet(effectiveBB * 3);
+                else onRaise(effectiveBB * 3);
               }}
               className="bg-zinc-800 hover:bg-zinc-700 text-emerald-400 font-bold text-xs px-2.5 py-1.5 rounded-xl border border-zinc-700 shrink-0 cursor-pointer active:scale-95 transition-all"
             >
-              Raise 3x ({effectiveBB * 3})
+              Raise +3x ({effectiveBB * 3})
             </button>
 
             {[10, 50, 100, 500].map((val) => (
               <button
                 key={val}
+                disabled={activePlayer.chips < val}
                 onClick={() => addQuickAmount(val)}
-                className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs px-3 py-1.5 rounded-xl border border-zinc-700 shrink-0 flex items-center gap-0.5 cursor-pointer active:scale-95 transition-all"
+                className="bg-zinc-800 hover:bg-zinc-700 disabled:opacity-30 text-zinc-200 font-bold text-xs px-3 py-1.5 rounded-xl border border-zinc-700 shrink-0 flex items-center gap-0.5 cursor-pointer active:scale-95 transition-all"
               >
                 <Plus className="w-3 h-3 text-emerald-400" />
                 {val}

@@ -34,6 +34,7 @@ interface SplitScreenViewProps {
   onCheck: (playerIndex: number) => void;
   onCall: (playerIndex: number) => void;
   onRaise: (playerIndex: number, amount: number) => void;
+  onAddBet?: (playerIndex: number, amount: number) => void;
   onFold: (playerIndex: number) => void;
   onAllIn: (playerIndex: number) => void;
   onNextStreet?: () => void;
@@ -60,6 +61,7 @@ export const SplitScreenView: React.FC<SplitScreenViewProps> = ({
   onCheck,
   onCall,
   onRaise,
+  onAddBet,
   onFold,
   onAllIn,
   onNextStreet,
@@ -275,7 +277,8 @@ export const SplitScreenView: React.FC<SplitScreenViewProps> = ({
                   disabled={player.chips < effectiveSB}
                   onClick={() => {
                     sound.playChip();
-                    onRaise(pIdx, player.currentBet + effectiveSB);
+                    if (onAddBet) onAddBet(pIdx, effectiveSB);
+                    else onRaise(pIdx, player.currentBet + effectiveSB);
                   }}
                   className="bg-amber-950/60 hover:bg-amber-900/80 text-amber-300 disabled:opacity-30 font-extrabold text-[11px] py-1.5 rounded-xl border border-amber-700/50 cursor-pointer active:scale-95 transition-all flex flex-col items-center justify-center leading-tight"
                 >
@@ -288,7 +291,8 @@ export const SplitScreenView: React.FC<SplitScreenViewProps> = ({
                   disabled={player.chips < effectiveBB}
                   onClick={() => {
                     sound.playChip();
-                    onRaise(pIdx, player.currentBet + effectiveBB);
+                    if (onAddBet) onAddBet(pIdx, effectiveBB);
+                    else onRaise(pIdx, player.currentBet + effectiveBB);
                   }}
                   className="bg-cyan-950/60 hover:bg-cyan-900/80 text-cyan-300 disabled:opacity-30 font-extrabold text-[11px] py-1.5 rounded-xl border border-cyan-700/50 cursor-pointer active:scale-95 transition-all flex flex-col items-center justify-center leading-tight"
                 >
@@ -298,28 +302,30 @@ export const SplitScreenView: React.FC<SplitScreenViewProps> = ({
 
                 {/* Raise 2x BB */}
                 <button
-                  disabled={player.chips < effectiveBB * 2 - player.currentBet}
+                  disabled={player.chips < effectiveBB * 2}
                   onClick={() => {
                     sound.playChip();
-                    onRaise(pIdx, effectiveBB * 2);
+                    if (onAddBet) onAddBet(pIdx, effectiveBB * 2);
+                    else onRaise(pIdx, effectiveBB * 2);
                   }}
                   className="bg-zinc-800 hover:bg-zinc-700 text-emerald-400 disabled:opacity-30 font-extrabold text-[11px] py-1.5 rounded-xl border border-zinc-700 cursor-pointer active:scale-95 transition-all flex flex-col items-center justify-center leading-tight"
                 >
-                  <span>Raise 2x</span>
-                  <span className="text-[9px] text-zinc-400">{effectiveBB * 2}</span>
+                  <span>Raise +2x</span>
+                  <span className="text-[9px] text-zinc-400">+{effectiveBB * 2}</span>
                 </button>
 
                 {/* Raise 3x BB */}
                 <button
-                  disabled={player.chips < effectiveBB * 3 - player.currentBet}
+                  disabled={player.chips < effectiveBB * 3}
                   onClick={() => {
                     sound.playChip();
-                    onRaise(pIdx, effectiveBB * 3);
+                    if (onAddBet) onAddBet(pIdx, effectiveBB * 3);
+                    else onRaise(pIdx, effectiveBB * 3);
                   }}
                   className="bg-zinc-800 hover:bg-zinc-700 text-emerald-400 disabled:opacity-30 font-extrabold text-[11px] py-1.5 rounded-xl border border-zinc-700 cursor-pointer active:scale-95 transition-all flex flex-col items-center justify-center leading-tight"
                 >
-                  <span>Raise 3x</span>
-                  <span className="text-[9px] text-zinc-400">{effectiveBB * 3}</span>
+                  <span>Raise +3x</span>
+                  <span className="text-[9px] text-zinc-400">+{effectiveBB * 3}</span>
                 </button>
               </div>
 
@@ -331,8 +337,12 @@ export const SplitScreenView: React.FC<SplitScreenViewProps> = ({
                     disabled={player.chips < val}
                     onClick={() => {
                       sound.playChip();
-                      const newTarget = Math.max(currentHighestBet, player.currentBet + val);
-                      onRaise(pIdx, newTarget);
+                      if (onAddBet) {
+                        onAddBet(pIdx, val);
+                      } else {
+                        const newTarget = player.currentBet + val;
+                        onRaise(pIdx, newTarget);
+                      }
                     }}
                     className="bg-zinc-900 hover:bg-zinc-800 disabled:opacity-30 text-zinc-300 font-bold text-[10px] py-1 rounded-lg border border-zinc-800 cursor-pointer active:scale-95 transition-all flex items-center justify-center gap-0.5"
                   >

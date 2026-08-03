@@ -222,6 +222,38 @@ export default function App() {
     nextTurnFrom(targetIdx);
   };
 
+  const handleAddBet = (addAmount: number, playerIndex?: number) => {
+    const targetIdx = playerIndex !== undefined ? playerIndex : activePlayerIndex;
+    const targetPlayer = players[targetIdx];
+    if (!targetPlayer || addAmount <= 0) return;
+
+    const actualAdd = Math.min(targetPlayer.chips, addAmount);
+    if (actualAdd <= 0) return;
+
+    const newCurrentBet = targetPlayer.currentBet + actualAdd;
+    const newChips = targetPlayer.chips - actualAdd;
+    const isAllIn = newChips === 0;
+
+    setPot((prev) => prev + actualAdd);
+    setCurrentHighestBet((prev) => Math.max(prev, newCurrentBet));
+
+    setPlayers((prev) =>
+      prev.map((p, idx) => {
+        if (idx === targetIdx) {
+          return {
+            ...p,
+            chips: newChips,
+            currentBet: newCurrentBet,
+            isAllIn,
+            lastAction: isAllIn ? `All-In (${newCurrentBet})` : `+${actualAdd} (ยอดเดิมพัน: ${newCurrentBet})`,
+          };
+        }
+        return p;
+      })
+    );
+    nextTurnFrom(targetIdx);
+  };
+
   const handleRaise = (targetTotalBet: number, playerIndex?: number) => {
     const targetIdx = playerIndex !== undefined ? playerIndex : activePlayerIndex;
     const targetPlayer = players[targetIdx];
@@ -606,6 +638,7 @@ export default function App() {
               onCheck={(idx) => handleCheck(idx)}
               onCall={(idx) => handleCall(idx)}
               onRaise={(idx, amt) => handleRaise(amt, idx)}
+              onAddBet={(idx, amt) => handleAddBet(amt, idx)}
               onFold={(idx) => handleFold(idx)}
               onAllIn={(idx) => handleAllIn(idx)}
               onNextStreet={handleNextStreet}
@@ -694,6 +727,7 @@ export default function App() {
                 onCheck={() => handleCheck()}
                 onCall={() => handleCall()}
                 onRaise={(amt) => handleRaise(amt)}
+                onAddBet={(amt) => handleAddBet(amt)}
                 onFold={() => handleFold()}
                 onAllIn={() => handleAllIn()}
                 onNextTurn={nextTurn}
