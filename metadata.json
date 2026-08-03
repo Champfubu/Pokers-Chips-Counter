@@ -1,0 +1,6 @@
+{
+  "name": "Poker Chip Counter",
+  "description": "แอพคำนวณชิปป๊อกเกอร์และกองกลางบนมือถือ Mobile-First UI โหมดมืด รองรับการเพิ่มลดผู้เล่น Quick Bet, Check, Call, Raise, Fold, All-in และมอบรางวัล Pot ให้ผู้ชนะ",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
