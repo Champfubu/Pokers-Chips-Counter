@@ -248,9 +248,27 @@ export const SplitScreenView: React.FC<SplitScreenViewProps> = ({
           <div className="mt-3 flex flex-col gap-2">
             {/* Quick Blind-Based & Chip Bet Buttons */}
             <div className="flex flex-col gap-1.5 bg-zinc-950/60 p-2 rounded-2xl border border-zinc-800">
-              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                Quick Bets (Blind Based):
-              </span>
+              <div className="flex items-center justify-between text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                <span>Quick Bets (Blind Based):</span>
+                {callAmount > 0 && (
+                  <span className="text-emerald-400 font-mono">Call Needed: +{callAmount}</span>
+                )}
+              </div>
+
+              {/* Call ตาม BB Quick Action Button */}
+              {callAmount > 0 && (
+                <button
+                  disabled={player.chips < callAmount}
+                  onClick={() => {
+                    sound.playChip();
+                    onCall(pIdx);
+                  }}
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-black font-black text-xs py-1.5 px-2 rounded-xl border border-emerald-400 cursor-pointer active:scale-95 transition-all shadow-[0_0_12px_rgba(16,185,129,0.35)] flex items-center justify-center gap-1 uppercase tracking-wider mb-0.5"
+                >
+                  <span>Call ตาม BB (+{callAmount})</span>
+                </button>
+              )}
+
               <div className="grid grid-cols-4 gap-1">
                 {/* Post SB */}
                 <button

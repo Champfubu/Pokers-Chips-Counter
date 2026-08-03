@@ -144,6 +144,20 @@ export const ActionControls: React.FC<ActionControlsProps> = ({
               Quick:
             </span>
 
+            {/* SB Call / Equalize to BB Button (highlighted when SB or calling BB) */}
+            {callAmount > 0 && (
+              <button
+                disabled={activePlayer.chips < callAmount}
+                onClick={() => {
+                  sound.playChip();
+                  onCall();
+                }}
+                className="bg-emerald-600 hover:bg-emerald-500 text-black font-black text-xs px-3 py-1.5 rounded-xl border border-emerald-400 shrink-0 cursor-pointer active:scale-95 transition-all shadow-[0_0_12px_rgba(16,185,129,0.4)] flex items-center gap-1 uppercase tracking-wider"
+              >
+                <span>Call ตาม BB (+{callAmount})</span>
+              </button>
+            )}
+
             {/* Post SB */}
             <button
               disabled={activePlayer.chips < effectiveSB}
