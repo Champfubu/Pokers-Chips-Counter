@@ -341,15 +341,13 @@ export default function App() {
     const nextStreet = streetOrder[(currentIdx + 1) % streetOrder.length];
     setStreet(nextStreet);
 
-    // Reset all active current bets for the new betting round
+    // Keep cumulative currentBet intact across streets for the hand
     setPlayers((prev) =>
       prev.map((p) => ({
         ...p,
-        currentBet: 0,
-        lastAction: p.isFolded ? 'Folded' : undefined,
+        lastAction: p.isFolded ? 'Folded' : `Street: ${nextStreet.toUpperCase()}`,
       }))
     );
-    setCurrentHighestBet(0);
 
     // Find first non-folded player left of Dealer to act post-flop
     const { sbIdx } = calculatePlayerRoles(players.length, dealerIndex);
