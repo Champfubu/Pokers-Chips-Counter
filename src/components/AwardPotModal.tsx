@@ -58,6 +58,24 @@ export const AwardPotModal: React.FC<AwardPotModalProps> = ({
   const sharePerWinner =
     selectedWinnerIds.length > 0 ? Math.floor(pot / selectedWinnerIds.length) : 0;
 
+  // Calculate All-In Capping preview
+  const singleWinner =
+    selectedWinnerIds.length === 1
+      ? players.find((p) => p.id === selectedWinnerIds[0])
+      : null;
+
+  let allInWinnings = 0;
+  let allInRefund = 0;
+
+  if (singleWinner && singleWinner.isAllIn) {
+    players.forEach((p) => {
+      const winFromP = Math.min(p.currentBet, singleWinner.currentBet);
+      allInWinnings += winFromP;
+      const refundToP = p.currentBet - winFromP;
+      if (refundToP > 0) allInRefund += refundToP;
+    });
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
       <div className="w-full max-w-sm bg-[#111111] border border-zinc-800 rounded-3xl p-5 shadow-2xl flex flex-col gap-4 text-zinc-100">
@@ -83,6 +101,14 @@ export const AwardPotModal: React.FC<AwardPotModalProps> = ({
           <div className="text-3xl font-black text-emerald-400 my-1 tabular-nums drop-shadow-[0_0_15px_rgba(52,211,153,0.3)]">
             {pot.toLocaleString()} <span className="text-xs font-normal text-zinc-400">Chips</span>
           </div>
+
+          {singleWinner && singleWinner.isAllIn && allInRefund > 0 && (
+            <div className="mt-2 text-xs text-amber-300 font-medium bg-amber-950/80 px-2.5 py-1.5 rounded-xl border border-amber-700/60 inline-block leading-tight text-left">
+              ⚡ <strong>All-In Capped:</strong> {singleWinner.name} ชนะได้สูงสุด <strong>+{allInWinnings.toLocaleString()}</strong> (2 เท่าของ All-In)
+              <br />
+              <span className="text-[10px] text-amber-200/90">↩ คืนชิปส่วนเกินให้คู่แข่ง +{allInRefund.toLocaleString()}</span>
+            </div>
+          )}
 
           {selectedWinnerIds.length > 1 && (
             <div className="mt-2 text-xs text-emerald-400 font-medium bg-emerald-950/60 px-2.5 py-1 rounded-full border border-emerald-800/40 inline-block">

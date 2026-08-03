@@ -329,20 +329,96 @@ export default function App() {
     nextTurnFrom(targetIdx);
   };
 
-  // Award pot to selected winner(s)
+  // Award pot to selected winner(s) with All-In pot capping & excess refund
   const handleAwardWinners = (winnerIds: string[]) => {
     if (winnerIds.length === 0 || pot === 0) return;
 
-    const share = Math.floor(pot / winnerIds.length);
+    // Track payouts and refunds for each player
+    const payouts: Record<string, number> = {};
+    players.forEach((p) => (payouts[p.id] = 0));
+
     const winnersList: { id: string; name: string; amountWon: number }[] = [];
+
+    if (winnerIds.length === 1) {
+      const winnerId = winnerIds[0];
+      const winner = players.find((p) => p.id === winnerId);
+
+      if (winner && winner.isAllIn) {
+        // All-In winner rule: Can only win up to winner's bet per opponent
+        // For 2 players (heads-up), this equals 2 * winner.currentBet
+        let winnerWinnings = 0;
+
+        players.forEach((p) => {
+          const winFromP = Math.min(p.currentBet, winner.currentBet);
+          winnerWinnings += winFromP;
+          const refundToP = p.currentBet - winFromP;
+          if (refundToP > 0) {
+            payouts[p.id] += refundToP;
+          }
+        });
+
+        payouts[winnerId] += winnerWinnings;
+      } else {
+        // Normal non-all-in winner gets full pot
+        payouts[winnerId] += pot;
+      }
+    } else {
+      // Split pot among multiple winners
+      const numWinners = winnerIds.length;
+      let totalAwarded = 0;
+
+      winnerIds.forEach((wId) => {
+        const winner = players.find((p) => p.id === wId);
+        if (!winner) return;
+
+        let maxEligible = 0;
+        players.forEach((p) => {
+          maxEligible += Math.min(p.currentBet, winner.currentBet);
+        });
+
+        const share = Math.floor(Math.min(pot / numWinners, maxEligible / numWinners));
+        payouts[wId] += share;
+        totalAwarded += share;
+      });
+
+      // Refund any unawarded excess pot back to contributors pro-rata
+      const excess = pot - totalAwarded;
+      if (excess > 0) {
+        const nonWinners = players.filter((p) => !winnerIds.includes(p.id));
+        const totalNonWinnerBet = nonWinners.reduce((sum, p) => sum + p.currentBet, 0);
+
+        if (totalNonWinnerBet > 0) {
+          nonWinners.forEach((p) => {
+            const refund = Math.floor((p.currentBet / totalNonWinnerBet) * excess);
+            payouts[p.id] += refund;
+          });
+        }
+      }
+    }
 
     setPlayers((prev) =>
       prev.map((p) => {
+        const amt = payouts[p.id] || 0;
         if (winnerIds.includes(p.id)) {
-          winnersList.push({ id: p.id, name: p.name, amountWon: share });
-          return { ...p, chips: p.chips + share, lastAction: `Won +${share}` };
+          winnersList.push({ id: p.id, name: p.name, amountWon: amt });
+          return {
+            ...p,
+            chips: p.chips + amt,
+            currentBet: 0,
+            lastAction: `Won +${amt.toLocaleString()}`,
+          };
+        } else if (amt > 0) {
+          return {
+            ...p,
+            chips: p.chips + amt,
+            currentBet: 0,
+            lastAction: `Refunded +${amt.toLocaleString()}`,
+          };
         }
-        return p;
+        return {
+          ...p,
+          currentBet: 0,
+        };
       })
     );
 
